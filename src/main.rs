@@ -3,9 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-mod gui;
-
 fn main() {
-    let mut app = gui::App::new();
+    let mut app = crosshair_switcher::gui::App::new("crosshair-switcher");
     app.launch();
 }
