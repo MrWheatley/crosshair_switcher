@@ -1,9 +1,6 @@
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{env, fs, process::Command};
 
+use normpath::{BasePathBuf, PathExt};
 use zip_extensions::*;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -62,27 +59,11 @@ fn dist_binary() -> Result<()> {
 
     fs::copy(&dst, dist_dir().join("crosshair-switcher.exe"))?;
 
-    let strip_path = |path: &Path| {
-        let p = path.to_str().unwrap();
-
-        if p.starts_with("\\\\?\\") {
-            return p.strip_prefix("\\\\?\\").unwrap().to_string();
-        }
-        p.to_string()
-    };
-
-    let from_scripts_dir = strip_path(&project_root().join("resources/scripts").canonicalize()?);
-    let from_materials_dir =
-        strip_path(&project_root().join("resources/materials").canonicalize()?);
+    let from_scripts_dir = project_root().join("resources/scripts");
+    let from_materials_dir = project_root().join("resources/materials");
 
     let to_scripts_dir = dist_dir().join("scripts");
     let to_materials_dir = dist_dir().join("materials");
-
-    fs::create_dir_all(&to_scripts_dir)?;
-    fs::create_dir_all(&to_materials_dir)?;
-
-    let to_scripts_dir = strip_path(&to_scripts_dir.canonicalize()?);
-    let to_materials_dir = strip_path(&to_materials_dir.canonicalize()?);
 
     let status = Command::new("xcopy.exe")
         .current_dir(project_root())
@@ -104,10 +85,13 @@ fn dist_binary() -> Result<()> {
         Err("copying materials dir failed")?;
     }
 
-    let archive_file = dist_dir().parent().unwrap().join("crosshair-switcher.zip");
+    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher.zip");
     let source_dir = dist_dir();
 
-    zip_create_from_directory(&archive_file, &source_dir)?;
+    zip_create_from_directory(
+        &archive_file.as_path().to_owned(),
+        &source_dir.as_path().to_owned(),
+    )?;
 
     fs::copy(&archive_file, dist_dir().join("crosshair-switcher.zip"))?;
     fs::remove_file(&archive_file)?;
@@ -120,13 +104,15 @@ fn dist_binary() -> Result<()> {
     todo!()
 }
 
-fn project_root() -> PathBuf {
-    Path::new(&env!("CARGO_MANIFEST_DIR"))
+fn project_root() -> BasePathBuf {
+    std::path::Path::new(&env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
         .to_path_buf()
+        .normalize_virtually()
+        .unwrap()
 }
 
-fn dist_dir() -> PathBuf {
+fn dist_dir() -> BasePathBuf {
     project_root().join("target/dist")
 }
