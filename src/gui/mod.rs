@@ -340,6 +340,19 @@ Affected Weapons:
         Ok(())
     }
 
+    fn apply_crosshairs(&mut self, weapons: Vec<(i32, WeaponFile)>) -> Result<()> {
+        if weapons.is_empty() {
+            bail!("No weapon selected");
+        }
+
+        for (i, weapon) in weapons {
+            error_log!(self.log, self.change_crosshair(&weapon));
+            error_log!(self.log, self.weapon_list.update_weapon(i, &weapon));
+        }
+
+        Ok(())
+    }
+
     pub fn launch(&mut self) {
         std::thread::spawn({
             let mut weapon_list = self.weapon_list.clone();
@@ -375,18 +388,7 @@ Affected Weapons:
                             if self.crosshair_radio.is_toggled() {
                                 let all_selected = self.weapon_list.all_selected();
 
-                                if all_selected.is_empty() {
-                                    self.log.log(LogType::Error, "No weapon selected");
-                                    continue;
-                                }
-
-                                for (i, weapon) in all_selected {
-                                    error_log!(self.log, self.change_crosshair(&weapon));
-                                    error_log!(
-                                        self.log,
-                                        self.weapon_list.update_weapon(i, &weapon)
-                                    );
-                                }
+                                error_log!(self.log, self.apply_crosshairs(all_selected));
                             } else {
                                 let weapon = match self.weapon_list.selected() {
                                     Some(w) => w,
@@ -421,15 +423,7 @@ Affected Weapons:
 
                             let all_class = self.weapon_list.all_class(&selected.class);
 
-                            if all_class.is_empty() {
-                                self.log.log(LogType::Error, "No classes found");
-                                continue;
-                            }
-
-                            for (i, weapon) in all_class {
-                                error_log!(self.log, self.change_crosshair(&weapon));
-                                error_log!(self.log, self.weapon_list.update_weapon(i, &weapon));
-                            }
+                            error_log!(self.log, self.apply_crosshairs(all_class));
                         }
                         ButtonMsg::ToSlot => {
                             let selected = match self.weapon_list.selected() {
@@ -442,28 +436,12 @@ Affected Weapons:
 
                             let all_slot = self.weapon_list.all_slot(selected.slot);
 
-                            if all_slot.is_empty() {
-                                self.log.log(LogType::Error, "No item in slot");
-                                continue;
-                            }
-
-                            for (i, weapon) in all_slot {
-                                error_log!(self.log, self.change_crosshair(&weapon));
-                                error_log!(self.log, self.weapon_list.update_weapon(i, &weapon));
-                            }
+                            error_log!(self.log, self.apply_crosshairs(all_slot));
                         }
                         ButtonMsg::ToAll => {
                             let all_weapons = self.weapon_list.all_items();
 
-                            if all_weapons.is_empty() {
-                                self.log.log(LogType::Error, "No items in list");
-                                continue;
-                            }
-
-                            for (i, weapon) in all_weapons {
-                                error_log!(self.log, self.change_crosshair(&weapon));
-                                error_log!(self.log, self.weapon_list.update_weapon(i, &weapon));
-                            }
+                            error_log!(self.log, self.apply_crosshairs(all_weapons));
                         }
                     },
                     Message::CrosshairRadioClicked => {
