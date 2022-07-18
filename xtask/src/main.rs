@@ -37,13 +37,6 @@ fn dist() -> Result<()> {
 
     fs::create_dir_all(dist_dir())?;
 
-    dist_binary()?;
-
-    Ok(())
-}
-
-#[cfg(target_os = "windows")]
-fn dist_binary() -> Result<()> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
 
     let status = Command::new(cargo)
@@ -55,6 +48,13 @@ fn dist_binary() -> Result<()> {
         Err("cargo build failed")?;
     }
 
+    dist_binary()?;
+
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn dist_binary() -> Result<()> {
     let dst = project_root().join("target/release/crosshair-switcher.exe");
 
     fs::copy(&dst, dist_dir().join("crosshair-switcher.exe"))?;
@@ -85,7 +85,10 @@ fn dist_binary() -> Result<()> {
         Err("copying materials dir failed")?;
     }
 
-    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher-windows.zip");
+    let archive_file = dist_dir()
+        .parent()?
+        .unwrap()
+        .join("crosshair-switcher-windows.zip");
     let source_dir = dist_dir();
 
     zip_create_from_directory(
@@ -93,7 +96,10 @@ fn dist_binary() -> Result<()> {
         &source_dir.as_path().to_owned(),
     )?;
 
-    fs::copy(&archive_file, dist_dir().join("crosshair-switcher-windows.zip"))?;
+    fs::copy(
+        &archive_file,
+        dist_dir().join("crosshair-switcher-windows.zip"),
+    )?;
     fs::remove_file(&archive_file)?;
 
     Ok(())
@@ -101,17 +107,6 @@ fn dist_binary() -> Result<()> {
 
 #[cfg(target_os = "linux")]
 fn dist_binary() -> Result<()> {
-    let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-
-    let status = Command::new(cargo)
-        .current_dir(project_root())
-        .args(&["build", "--release"])
-        .status()?;
-
-    if !status.success() {
-        Err("cargo build failed")?;
-    }
-
     let dst = project_root().join("target/release/crosshair-switcher");
 
     fs::copy(&dst, dist_dir().join("crosshair-switcher"))?;
@@ -142,7 +137,10 @@ fn dist_binary() -> Result<()> {
         Err("copying materials dir failed")?;
     }
 
-    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher-linux.zip");
+    let archive_file = dist_dir()
+        .parent()?
+        .unwrap()
+        .join("crosshair-switcher-linux.zip");
     let source_dir = dist_dir();
 
     zip_create_from_directory(
@@ -150,7 +148,10 @@ fn dist_binary() -> Result<()> {
         &source_dir.as_path().to_owned(),
     )?;
 
-    fs::copy(&archive_file, dist_dir().join("crosshair-switcher-linux.zip"))?;
+    fs::copy(
+        &archive_file,
+        dist_dir().join("crosshair-switcher-linux.zip"),
+    )?;
     fs::remove_file(&archive_file)?;
 
     Ok(())
