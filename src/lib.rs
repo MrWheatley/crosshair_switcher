@@ -276,7 +276,7 @@ mod test {
     fn associations() {
         let json = json::parse(super::ASSOCIATIONS).unwrap();
 
-        for file in std::fs::read_dir(std::path::Path::new("scripts")).unwrap() {
+        for file in std::fs::read_dir(std::path::Path::new("resources/scripts")).unwrap() {
             let file = file.unwrap().path();
 
             assert!(json.has_key(file.file_stem().unwrap().to_str().unwrap()));
@@ -286,7 +286,7 @@ mod test {
     #[test]
     fn parse() {
         let w = WeaponFile::new(
-            Path::new("scripts/tf_weapon_grenadelauncher.txt"),
+            Path::new("resources/scripts/tf_weapon_grenadelauncher.txt"),
             "Demoman".into(),
             1,
         )
@@ -297,7 +297,7 @@ mod test {
         assert_eq!(w.explosion_effect, Some(ExplosionEffect::Default));
 
         let w_2 = WeaponFile::new(
-            Path::new("scripts/tf_weapon_flaregun.txt"),
+            Path::new("resources/scripts/tf_weapon_flaregun.txt"),
             "Pyro".into(),
             2,
         )
@@ -311,7 +311,7 @@ mod test {
     #[test]
     fn replace_crosshair() {
         let w = WeaponFile::new(
-            Path::new("scripts/tf_weapon_grenadelauncher.txt"),
+            Path::new("resources/scripts/tf_weapon_grenadelauncher.txt"),
             "Demoman".into(),
             1,
         )
@@ -339,7 +339,7 @@ mod test {
     #[test]
     fn replace_explosion() {
         let w = WeaponFile::new(
-            Path::new("scripts/tf_weapon_grenadelauncher.txt"),
+            Path::new("resources/scripts/tf_weapon_grenadelauncher.txt"),
             "Demoman".into(),
             1,
         )
