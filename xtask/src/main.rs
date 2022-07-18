@@ -62,7 +62,7 @@ fn dist_binary() -> Result<()> {
 
     fs::copy(&dst, dist_dir().join("crosshair-switcher.exe"))?;
 
-    let clean_path = |path: &Path| {
+    let strip_path = |path: &Path| {
         let p = path.to_str().unwrap();
 
         if p.starts_with("\\\\?\\") {
@@ -71,9 +71,9 @@ fn dist_binary() -> Result<()> {
         p.to_string()
     };
 
-    let from_scripts_dir = clean_path(&project_root().join("resources/scripts").canonicalize()?);
+    let from_scripts_dir = strip_path(&project_root().join("resources/scripts").canonicalize()?);
     let from_materials_dir =
-        clean_path(&project_root().join("resources/materials").canonicalize()?);
+        strip_path(&project_root().join("resources/materials").canonicalize()?);
 
     let to_scripts_dir = dist_dir().join("scripts");
     let to_materials_dir = dist_dir().join("materials");
@@ -81,8 +81,8 @@ fn dist_binary() -> Result<()> {
     fs::create_dir_all(&to_scripts_dir)?;
     fs::create_dir_all(&to_materials_dir)?;
 
-    let to_scripts_dir = clean_path(&to_scripts_dir.canonicalize()?);
-    let to_materials_dir = clean_path(&to_materials_dir.canonicalize()?);
+    let to_scripts_dir = strip_path(&to_scripts_dir.canonicalize()?);
+    let to_materials_dir = strip_path(&to_materials_dir.canonicalize()?);
 
     let status = Command::new("xcopy.exe")
         .current_dir(project_root())
@@ -122,8 +122,7 @@ fn dist_binary() -> Result<()> {
 
 fn project_root() -> PathBuf {
     Path::new(&env!("CARGO_MANIFEST_DIR"))
-        .ancestors()
-        .nth(1)
+        .parent()
         .unwrap()
         .to_path_buf()
 }
