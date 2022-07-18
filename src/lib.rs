@@ -272,8 +272,6 @@ impl WeaponFile {
 mod test {
     use super::*;
 
-    use std::io::Write;
-
     #[test]
     fn associations() {
         let json = json::parse(super::ASSOCIATIONS).unwrap();
@@ -329,13 +327,36 @@ mod test {
 
         let temp_dir = tempfile::tempdir().unwrap();
 
-        let temp_dir = temp_dir.path().join("replace_crosshair.txt");
+        let temp_dir = temp_dir.path().join("replace_explosion.txt");
 
-        let mut new_file = fs::File::create(&temp_dir).unwrap();
-        write!(new_file, "{}", s).unwrap();
+        fs::write(&temp_dir, s).unwrap();
 
         let w = WeaponFile::new(&temp_dir, "Demoman".into(), 1).unwrap();
 
         assert_eq!(w.crosshair, "vgui/replay/thumbnails/bigcross");
+    }
+
+    #[test]
+    fn replace_explosion() {
+        let w = WeaponFile::new(
+            Path::new("scripts/tf_weapon_grenadelauncher.txt"),
+            "Demoman".into(),
+            1,
+        )
+        .unwrap();
+
+        let s = w
+            .replace_explosion(&ExplosionEffect::ElectricShock)
+            .unwrap();
+
+        let temp_dir = tempfile::tempdir().unwrap();
+
+        let temp_dir = temp_dir.path().join("tf_weapon_grenadelauncher.txt");
+
+        fs::write(&temp_dir, s).unwrap();
+
+        let w = WeaponFile::new(&temp_dir, "Demoman".into(), 1).unwrap();
+
+        assert_eq!(w.explosion_effect, Some(ExplosionEffect::ElectricShock));
     }
 }
