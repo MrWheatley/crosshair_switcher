@@ -99,9 +99,61 @@ fn dist_binary() -> Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "linus")]
+#[cfg(target_os = "linux")]
 fn dist_binary() -> Result<()> {
-    todo!()
+    let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+
+    let status = Command::new(cargo)
+        .current_dir(project_root())
+        .args(&["build", "--release"])
+        .status()?;
+
+    if !status.success() {
+        Err("cargo build failed")?;
+    }
+
+    let dst = project_root().join("target/release/crosshair-switcher");
+
+    fs::copy(&dst, dist_dir().join("crosshair-switcher"))?;
+
+    let from_scripts_dir = project_root().join("resources/scripts");
+    let from_materials_dir = project_root().join("resources/materials");
+
+    let to_scripts_dir = dist_dir().join("scripts");
+    let to_materials_dir = dist_dir().join("materials");
+
+    let status = Command::new("cp")
+        .current_dir(project_root())
+        .arg("-R")
+        .args(&[from_scripts_dir, to_scripts_dir])
+        .status()?;
+
+    if !status.success() {
+        Err("copying scripts dir failed")?;
+    }
+
+    let status = Command::new("cp")
+        .current_dir(project_root())
+        .arg("-R")
+        .args(&[from_materials_dir, to_materials_dir])
+        .status()?;
+
+    if !status.success() {
+        Err("copying materials dir failed")?;
+    }
+
+    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher.zip");
+    let source_dir = dist_dir();
+
+    zip_create_from_directory(
+        &archive_file.as_path().to_owned(),
+        &source_dir.as_path().to_owned(),
+    )?;
+
+    fs::copy(&archive_file, dist_dir().join("crosshair-switcher.zip"))?;
+    fs::remove_file(&archive_file)?;
+
+    Ok(())
 }
 
 fn project_root() -> BasePathBuf {
@@ -109,7 +161,7 @@ fn project_root() -> BasePathBuf {
         .parent()
         .unwrap()
         .to_path_buf()
-        .normalize_virtually()
+        .normalize()
         .unwrap()
 }
 
