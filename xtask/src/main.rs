@@ -85,7 +85,7 @@ fn dist_binary() -> Result<()> {
         Err("copying materials dir failed")?;
     }
 
-    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher.zip");
+    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher-windows.zip");
     let source_dir = dist_dir();
 
     zip_create_from_directory(
@@ -93,7 +93,7 @@ fn dist_binary() -> Result<()> {
         &source_dir.as_path().to_owned(),
     )?;
 
-    fs::copy(&archive_file, dist_dir().join("crosshair-switcher.zip"))?;
+    fs::copy(&archive_file, dist_dir().join("crosshair-switcher-windows.zip"))?;
     fs::remove_file(&archive_file)?;
 
     Ok(())
@@ -142,7 +142,7 @@ fn dist_binary() -> Result<()> {
         Err("copying materials dir failed")?;
     }
 
-    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher.zip");
+    let archive_file = dist_dir().parent()?.unwrap().join("crosshair-switcher-linux.zip");
     let source_dir = dist_dir();
 
     zip_create_from_directory(
@@ -150,7 +150,7 @@ fn dist_binary() -> Result<()> {
         &source_dir.as_path().to_owned(),
     )?;
 
-    fs::copy(&archive_file, dist_dir().join("crosshair-switcher.zip"))?;
+    fs::copy(&archive_file, dist_dir().join("crosshair-switcher-linux.zip"))?;
     fs::remove_file(&archive_file)?;
 
     Ok(())
