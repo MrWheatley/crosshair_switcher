@@ -158,6 +158,7 @@ impl WeaponList {
             );
         }
     }
+    
     pub fn find_value(&self, key: &str) -> Result<(&str, &json::JsonValue)> {
         self.json_data
             .entries()
