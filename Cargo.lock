@@ -63,24 +63,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cocoa-colors"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7fc3439406f349e0bc20d7de87314803378a535190d12e62991f7c8474d5296"
-dependencies = [
- "cc",
-]
-
-[[package]]
-name = "color-maps"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "120b737cc99b0d73bf0a9bfa6086e84c0bde3b955851f37f812865bc08b35feb"
-dependencies = [
- "lazy_static",
-]
-
-[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,7 +124,7 @@ dependencies = [
 
 [[package]]
 name = "crosshair_switcher"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "fltk",
@@ -228,10 +210,9 @@ dependencies = [
 
 [[package]]
 name = "fltk-theme"
-version = "0.4.2"
+version = "0.5.0"
+source = "git+https://github.com/MrWheatley/fltk-theme#9f0f6758a1df61bbca27aedb169e7bc2daddef11"
 dependencies = [
- "cocoa-colors",
- "color-maps",
  "fltk",
  "lazy_static",
 ]
