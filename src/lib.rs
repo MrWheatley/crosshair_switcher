@@ -19,7 +19,7 @@ const USES_EXPLOSION: [&str; 7] = [
     "tf_weapon_pipebomblauncher",
 ];
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ExplosionEffect {
     Default,
     PyroPool,
@@ -43,12 +43,12 @@ impl ExplosionEffect {
 
     fn to_weapon_file_str(&self) -> &str {
         match self {
-            ExplosionEffect::Default => panic!("Deal with default elsewhere"),
-            ExplosionEffect::PyroPool => "eotl_pyro_pool_explosion_flash",
-            ExplosionEffect::MuzzleFlash => "muzzle_minigun_starflash01",
-            ExplosionEffect::SapperDestroyed => "ExplosionCore_sapperdestroyed",
-            ExplosionEffect::ElectricShock => "electrocuted_red_flash",
-            ExplosionEffect::Other(e) => e,
+            Self::Default => panic!("Deal with default elsewhere"),
+            Self::PyroPool => "eotl_pyro_pool_explosion_flash",
+            Self::MuzzleFlash => "muzzle_minigun_starflash01",
+            Self::SapperDestroyed => "ExplosionCore_sapperdestroyed",
+            Self::ElectricShock => "electrocuted_red_flash",
+            Self::Other(e) => e,
         }
     }
 }
@@ -150,11 +150,10 @@ impl WeaponFile {
         Ok(line.unwrap().replace('"', ""))
     }
 
-    fn replace_value(vec: &mut Vec<String>, i: usize, value: &str) -> Result<()> {
-        let v = Self::get_value(&vec[i])?;
+    fn replace_value(slice: &mut [String], idx: usize, new_val: &str) -> Result<()> {
+        let old_val = Self::get_value(&slice[idx])?;
 
-        vec.insert(i, vec[i].replace(&v, value));
-        vec.remove(i + 1);
+        slice[idx] = slice[idx].replace(&old_val, new_val);
 
         Ok(())
     }
@@ -326,7 +325,6 @@ mod test {
         let s = w.replace_crosshair(&c).unwrap();
 
         let temp_dir = tempfile::tempdir().unwrap();
-
         let temp_dir = temp_dir.path().join("replace_explosion.txt");
 
         fs::write(&temp_dir, s).unwrap();
@@ -350,7 +348,6 @@ mod test {
             .unwrap();
 
         let temp_dir = tempfile::tempdir().unwrap();
-
         let temp_dir = temp_dir.path().join("tf_weapon_grenadelauncher.txt");
 
         fs::write(&temp_dir, s).unwrap();
