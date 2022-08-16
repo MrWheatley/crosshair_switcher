@@ -1,7 +1,7 @@
 use std::{env, fs, process::Command};
 
 use normpath::{BasePathBuf, PathExt};
-use zip_extensions::*;
+use zip_extensions::zip_create_from_directory;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -38,7 +38,6 @@ fn dist() -> Result<()> {
     fs::create_dir_all(dist_dir())?;
 
     let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
-
     let status = Command::new(cargo)
         .current_dir(project_root())
         .args(&["build", "--release"])
@@ -48,68 +47,16 @@ fn dist() -> Result<()> {
         Err("cargo build failed")?;
     }
 
-    dist_binary()?;
+    let exe = if cfg!(target_os = "windows") {
+        "crosshair-switcher.exe"
+    } else if cfg!(target_os = "linux") {
+        "crosshair-switcher"
+    } else {
+        unimplemented!();
+    };
 
-    Ok(())
-}
-
-#[cfg(target_os = "windows")]
-fn dist_binary() -> Result<()> {
-    let dst = project_root().join("target/release/crosshair-switcher.exe");
-
-    fs::copy(&dst, dist_dir().join("crosshair-switcher.exe"))?;
-
-    let from_scripts_dir = project_root().join("resources/scripts");
-    let from_materials_dir = project_root().join("resources/materials");
-
-    let to_scripts_dir = dist_dir().join("scripts");
-    let to_materials_dir = dist_dir().join("materials");
-
-    let status = Command::new("xcopy.exe")
-        .current_dir(project_root())
-        .args(&[from_scripts_dir, to_scripts_dir])
-        .args(&["/E", "/H", "/I"])
-        .status()?;
-
-    if !status.success() {
-        Err("copying scripts dir failed")?;
-    }
-
-    let status = Command::new("xcopy.exe")
-        .current_dir(project_root())
-        .args(&[from_materials_dir, to_materials_dir])
-        .args(&["/E", "/H", "/I"])
-        .status()?;
-
-    if !status.success() {
-        Err("copying materials dir failed")?;
-    }
-
-    let archive_file = dist_dir()
-        .parent()?
-        .unwrap()
-        .join("crosshair-switcher-windows.zip");
-    let source_dir = dist_dir();
-
-    zip_create_from_directory(
-        &archive_file.as_path().to_owned(),
-        &source_dir.as_path().to_owned(),
-    )?;
-
-    fs::copy(
-        &archive_file,
-        dist_dir().join("crosshair-switcher-windows.zip"),
-    )?;
-    fs::remove_file(&archive_file)?;
-
-    Ok(())
-}
-
-#[cfg(target_os = "linux")]
-fn dist_binary() -> Result<()> {
-    let dst = project_root().join("target/release/crosshair-switcher");
-
-    fs::copy(&dst, dist_dir().join("crosshair-switcher"))?;
+    let dst = project_root().join("target/release/").join(exe);
+    fs::copy(&dst, dist_dir().join(exe))?;
 
     let from_scripts_dir = project_root().join("resources/scripts");
     let from_materials_dir = project_root().join("resources/materials");
@@ -117,30 +64,55 @@ fn dist_binary() -> Result<()> {
     let to_scripts_dir = dist_dir().join("scripts");
     let to_materials_dir = dist_dir().join("materials");
 
-    let status = Command::new("cp")
-        .current_dir(project_root())
-        .arg("-R")
-        .args(&[from_scripts_dir, to_scripts_dir])
-        .status()?;
+    let status = if cfg!(target_os = "windows") {
+        Command::new("xcopy.exe")
+            .current_dir(project_root())
+            .args(&[from_scripts_dir, to_scripts_dir])
+            .args(&["/E", "/H", "/I"])
+            .status()
+    } else if cfg!(target_os = "linux") {
+        Command::new("cp")
+            .current_dir(project_root())
+            .arg("-R")
+            .args(&[from_scripts_dir, to_scripts_dir])
+            .status()
+    } else {
+        unimplemented!();
+    }?;
 
     if !status.success() {
         Err("copying scripts dir failed")?;
     }
 
-    let status = Command::new("cp")
-        .current_dir(project_root())
-        .arg("-R")
-        .args(&[from_materials_dir, to_materials_dir])
-        .status()?;
+    let status = if cfg!(target_os = "windows") {
+        Command::new("xcopy.exe")
+            .current_dir(project_root())
+            .args(&[from_materials_dir, to_materials_dir])
+            .args(&["/E", "/H", "/I"])
+            .status()
+    } else if cfg!(target_os = "linux") {
+        Command::new("cp")
+            .current_dir(project_root())
+            .arg("-R")
+            .args(&[from_materials_dir, to_materials_dir])
+            .status()
+    } else {
+        unimplemented!();
+    }?;
 
     if !status.success() {
         Err("copying materials dir failed")?;
     }
 
-    let archive_file = dist_dir()
-        .parent()?
-        .unwrap()
-        .join("crosshair-switcher-linux.zip");
+    let zip_name = if cfg!(target_os = "windows") {
+        "crosshair-switcher-windows.zip"
+    } else if cfg!(target_os = "linux") {
+        "crosshair-switcher-linux.zip"
+    } else {
+        unimplemented!();
+    };
+
+    let archive_file = dist_dir().parent()?.unwrap().join(zip_name);
     let source_dir = dist_dir();
 
     zip_create_from_directory(
@@ -148,10 +120,7 @@ fn dist_binary() -> Result<()> {
         &source_dir.as_path().to_owned(),
     )?;
 
-    fs::copy(
-        &archive_file,
-        dist_dir().join("crosshair-switcher-linux.zip"),
-    )?;
+    fs::copy(&archive_file, dist_dir().join(zip_name))?;
     fs::remove_file(&archive_file)?;
 
     Ok(())

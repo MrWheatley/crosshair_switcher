@@ -98,7 +98,6 @@ impl CrosshairList {
         let mut crosshair_file = std::fs::File::open(&vtf_path)?;
 
         let mut buf = Vec::new();
-
         crosshair_file.read_to_end(&mut buf)?;
 
         let vtf = vtf::from_bytes(&mut buf)?.highres_image.decode(0)?;

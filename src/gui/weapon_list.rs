@@ -106,11 +106,11 @@ impl WeaponList {
         {
             let text = self.list.text(i).unwrap();
 
-            if !text.starts_with("@f>") {
+            if !text.starts_with("@f@C4") {
                 return;
             }
 
-            let text = text.replace("> ", "");
+            let text = text.replace("@C4", "");
             let mut text = text.split("@f");
             text.next();
 
@@ -137,7 +137,7 @@ impl WeaponList {
         {
             let text = self.list.text(i).unwrap();
 
-            if text.starts_with("@f>") {
+            if text.starts_with("@f@C4") {
                 return;
             }
 
@@ -147,7 +147,7 @@ impl WeaponList {
             self.list.set_text(
                 i,
                 &format!(
-                    "@f> {}@f{}@f{}",
+                    "@f@C4{}@f@C4{}@f{}",
                     text.next().unwrap(),
                     text.next().unwrap(),
                     &Path::new(&weapon.crosshair)
@@ -158,7 +158,7 @@ impl WeaponList {
             );
         }
     }
-    
+
     pub fn find_value(&self, key: &str) -> Result<(&str, &json::JsonValue)> {
         self.json_data
             .entries()
